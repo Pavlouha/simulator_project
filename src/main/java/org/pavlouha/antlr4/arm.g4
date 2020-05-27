@@ -5,17 +5,17 @@ compilationUnit
    ;
 
 segments
-   : Identifier 'segments' 'para' 'public' (code | proc)* Identifier 'ends'
+   : Identifier 'segments' 'para' 'public' (statement | proc)* Identifier 'ends'
    ;
 
 proc
-   : Identifier PROC (code)* 'ret' Identifier ENDP
+   : Identifier PROC (statement)* 'ret' Identifier ENDP
    ;
 
    //не делол первые три вещи, надо сначала с командами разбираться
 
-code
-   : binary_exp1
+statement
+   : rdrnop2
    | binary_exp3
    | binary_exp7
    | unuary_exp1
@@ -25,10 +25,8 @@ code
    | directive_exp1
    ;
 
-binary_exp1
-   : o register Separator (register | Digit | memory)
-   | o memory Separator (register | Digit)
-   ;
+rdrnop2
+   : (o (register ',')? register ',' register);
 
 unuary_exp1
    : op (Digit | register | memory)
@@ -62,7 +60,7 @@ memory
    : '[' (register | Identifier) ('+' ((register ('+' (Digit | Hexnum | Octalnum))?) | Digit | Hexnum | Octalnum))? ']'
    ;
 
-constant : '#' (Digit | Char);
+constant : '#' (Digit | Char | Hexnum);
 
 offset : '[' register (',' constant)? ']' ;
 
@@ -527,17 +525,13 @@ fragment Letter
    : ('a' .. 'z' | 'A' .. 'Z')
    ;
 
-
 Digit: [0-9]+ ;
 
-
 Colon: ':';
-
 
 Separator: ',';
 
 WS : (' ' | '\t' | '\n' | '\r') -> skip ;
-
 
 LINE_COMMENT: ';' ~ ('\n' | '\r')* '\r'? '\n' -> skip ;
 
@@ -814,8 +808,8 @@ WFE : 'WFE';
 WFI : 'WFI';
 
 //directives
-AREA : '.area';
-ENTRY : '.entry';
+AREA : 'AREA';
+ENTRY : 'ENTRY';
 ALIGN : '.align';
 DCB : '.dcb';
 DCW : '.dcw';
