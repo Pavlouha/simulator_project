@@ -17,29 +17,22 @@ proc
 statement
    : addsubstracts | logicalands | b_instr_label | b_instr_rm | adrs | arythmetics | rrxs | bfc | bfi | bkpt | cbz_cbnzs
    | clz | clrex | cmp_cmn | cmp_cmns | cpss | dmb | dsb | isb | it | ldm_stms | ldrs | ldrex | strex | ldrexb | strexb
-   | ldrexh | strexh
+   | ldrexh | strexh | mul | mla_mls
    ;
 
-addsubstracts
-   : addsubstract (register Separator)? register Separator (register | constant);
+addsubstracts : addsubstract (register Separator)? register Separator (register | constant);
 
-logicalands
-    : logicaland (register Separator)? register Separator (register | constant);
+logicalands : logicaland (register Separator)? register Separator (register | constant);
 
-adrs
-   : adr register Separator Identifier;
+adrs : adr register Separator Identifier;
 
-arythmetics
-   : arythmetic register Separator register Separator (register | constant);
+arythmetics : arythmetic cond_code register Separator register Separator (register | constant);
 
-rrxs
-   : rrx register Separator register;
+rrxs : rrx register Separator register;
 
-b_instr_label
-   : b_instr Identifier;
+b_instr_label : b_instr Identifier;
 
-b_instr_rm
-   : b_instr register;
+b_instr_rm : b_instr register;
 
 bfc : BFC register Separator constant Separator constant ;
 
@@ -51,9 +44,9 @@ cbz_cbnzs : cbz_cbnz register Separator Identifier ;
 
 clrex: CLREX ;
 
-clz: register Separator register ;
+clz: CLZ register Separator register ;
 
-cmp_cmns: register Separator (register | constant) ;
+cmp_cmns: cmp_cmn register Separator (register | constant) ;
 
 cpss : cps ('i' | 'f') ;
 
@@ -82,6 +75,10 @@ strexb: STREXB cond_code register Separator register Separator '[' register ']' 
 ldrexh: LDREXH cond_code register Separator '[' register ']' ;
 
 strexh: STREXH cond_code register Separator register Separator '[' register ']' ;
+
+mul : multiply cond_code (register Separator)? register Separator register ;
+
+mla_mls : mla cond_code register Separator register Separator register Separator register ;
 
 constant : '#' (Digit | Char | Hexnum);
 
@@ -132,7 +129,6 @@ register
    | MOVW
    | MRS
    | MSR
-   | MULS
    | MVN
    | MVNS
    | NOP
@@ -293,8 +289,6 @@ register
    | WFE
    | WFI
    | IT
-   | MLA
-   | MLS
    | MOV
    | PUSH
    ;
@@ -392,6 +386,14 @@ ldr_str
     | LDRSHT
     | LDRT
 ;
+
+multiply
+    : MUL
+    | MULS ;
+
+mla
+    : MLA
+    | MLS ;
 
 directives
    : AREA
