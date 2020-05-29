@@ -1,7 +1,7 @@
 grammar arm;
 
 compilationUnit
-   : (segments | directive_exp1)* END Identifier
+   : (segments )* END Identifier
    ;
 
 segments
@@ -12,59 +12,86 @@ proc
    : Identifier PROC (statement)* 'ret' Identifier ENDP
    ;
 
-   //не делол первые три вещи, надо сначала с командами разбираться
+   //TODO не делол первые три вещи, надо сначала с командами разбираться
 
 statement
-   : rdrnop2
-   | binary_exp3
-   | binary_exp7
-   | unuary_exp1
-   | unuary_exp2
-   | notarguments
-   | variabledeclaration
-   | directive_exp1
+   : addsubstracts | logicalands | b_instr_label | b_instr_rm | adrs | arythmetics | rrxs | bfc | bfi | bkpt | cbz_cbnzs
+   | clz | clrex | cmp_cmn | cmp_cmns | cpss | dmb | dsb | isb | it | ldm_stms | ldrs | ldrex | strex | ldrexb | strexb
+   | ldrexh | strexh
    ;
 
-rdrnop2
-   : (o (register ',')? register ',' register);
+addsubstracts
+   : addsubstract (register Separator)? register Separator (register | constant);
 
-unuary_exp1
-   : op (Digit | register | memory)
-   ;
+logicalands
+    : logicaland (register Separator)? register Separator (register | constant);
 
-unuary_exp2
-   : ope (register | memory)
-   ;
+adrs
+   : adr register Separator Identifier;
 
-notarguments
-   : opera
-   ;
+arythmetics
+   : arythmetic register Separator register Separator (register | constant);
 
-binary_exp3
-   : operat (register | memory) Separator (register | Digit | memory)
-   ;
+rrxs
+   : rrx register Separator register;
 
-binary_exp7
-   : s (register | memory) Separator (Digit | register)
-   ;
+b_instr_label
+   : b_instr Identifier;
 
-directive_exp1
-   : (directives Identifier | directives)
-   ;
+b_instr_rm
+   : b_instr register;
 
-variabledeclaration
-   : Identifier ty (question | String | Digit)
-   ;
+bfc : BFC register Separator constant Separator constant ;
 
-memory
-   : '[' (register | Identifier) ('+' ((register ('+' (Digit | Hexnum | Octalnum))?) | Digit | Hexnum | Octalnum))? ']'
-   ;
+bfi : BFI register Separator register Separator constant Separator constant ;
+
+bkpt : BKPT constant ;
+
+cbz_cbnzs : cbz_cbnz register Separator Identifier ;
+
+clrex: CLREX ;
+
+clz: register Separator register ;
+
+cmp_cmns: register Separator (register | constant) ;
+
+cpss : cps ('i' | 'f') ;
+
+dmb : DMB ;
+
+dsb : DSB ;
+
+isb : ISB ;
+
+it : IT ('E' | 'T' | 'EE' | 'ET' | 'TT' | 'TE' | 'EEE' | 'EET' | 'ETT' | 'TTT' | 'TTE' | 'TEE' | 'ETE' | 'TET')?;
+
+ldm_stms : ldm_stm register ('!')? Separator '{' register (',' register)? '}' ;
+
+ldrs : ldr_str ((register Separator offset ) | (register Separator offset_all '!') | (register Separator '[' register ']' ',' constant )
+| (register Separator register Separator offset ) | (register Separator register Separator offset_all '!')
+| (register Separator register Separator '[' register ']' ',' constant ));
+
+ldrex: LDREX cond_code register Separator offset;
+
+strex: STREX cond_code register Separator register Separator offset;
+
+ldrexb: LDREXB cond_code register Separator '[' register ']' ;
+
+strexb: STREXB cond_code register Separator register Separator '[' register ']' ;
+
+ldrexh: LDREXH cond_code register Separator '[' register ']' ;
+
+strexh: STREXH cond_code register Separator register Separator '[' register ']' ;
 
 constant : '#' (Digit | Char | Hexnum);
 
 offset : '[' register (',' constant)? ']' ;
 
-label : Identifier Colon ;
+offset_all : '[' register ',' constant ']' ;
+
+lbl : Identifier Colon ;
+
+cond_code : (EQ | NE | CS | HS | CC | L0 | MI | PL | VS | VC | HI | LS | GE | LT | GT | LE | AL)? ;
 
 register
    : R0
@@ -91,31 +118,15 @@ register
    ;
 
    non_grouped
-   : ADR
-   | AND
-   | ANDS
-   | ASR
-   | ASRS
-   | B
-   | BFC
+   : BFC
    | BFI
-   | BIC
-   | BICS
+   | POP
    | BKPT
-   | BL
-   | BLX
-   | BX
-   | CBNZ
-   | CBZ
+   | MOVS
    | CLREX
    | CLZ
-   | CMN
-   | CPSID
-   | CPSIE
    | DMB
    | DSB
-   | EOR
-   | EORS
    | ISB
    | MOVT
    | MOVW
@@ -125,10 +136,6 @@ register
    | MVN
    | MVNS
    | NOP
-   | ORN
-   | ORNS
-   | ORR
-   | ORRS
    | PKHTB
    | PKHBT
    | QADD
@@ -145,16 +152,9 @@ register
    | REV
    | REV16
    | REVSH
-   | RORS
-   | RRX
-   | RRXS
-   | RSB
-   | RSBS
    | SADD16
    | SADD8
    | SASX
-   | SBC
-   | SBCS
    | SBFX
    | SDIV
    | SEL
@@ -207,18 +207,12 @@ register
    | STMEA
    | STMFD
    | STMIA
-   | STR
-   | STRB
    | STRBT
-   | STRD
    | STREX
    | STREXB
    | STREXH
-   | STRH
    | STRHT
    | STRT
-   | SUBS
-   | SUBW
    | SVC
    | SXTAB
    | SXTAB16
@@ -299,61 +293,105 @@ register
    | WFE
    | WFI
    | IT
-   | LDM
-   | LDMDB
-   | LDMEA
-   | LDMFD
-   | LDMIA
-   | LDR
-   | LDRB
-   | LDRBT
-   | LDRD
-   | LDREX
-   | LDREXB
-   | LDREXH
-   | LDRH
-   | LDRHT
-   | LDRSB
-   | LDRSBT
-   | LDRSH
-   | LDRSHT
-   | LDRT
-   | LSL
-   | LSLS
-   | LSR
-   | LSRS
    | MLA
    | MLS
+   | MOV
+   | PUSH
    ;
 
-o
-   : MOV
-   | CMP
-   ;
-
-op
-   : PUSH
-   ;
-
-ope
-   : POP;
-
-opera
-   : MOVS
-   ;
-
-operat
+addsubstract
    : ADC
    | ADCS
    | ADD
    | ADDS
-   | ADDW
    | SUB
+   | SUBS
+   | SBC
+   | SBCS
+   | RSB
+   | RSBS
+   | ADDW
+   | SUBW
    ;
 
-s
-   : ROR
+logicaland
+    : AND
+    | ANDS
+    | ORR
+    | ORRS
+    | EOR
+    | EORS
+    | BIC
+    | BICS
+    | ORN
+    | ORNS
+    ;
+
+adr
+   : ADR
    ;
+
+arythmetic
+   : ASR
+   | ASRS
+   | LSL
+   | LSLS
+   | LSR
+   | LSRS
+   | ROR
+   | RORS
+   ;
+
+rrx
+   : RRX
+   | RRXS
+   ;
+
+b_instr
+   : B
+   | BL
+   | BLX
+   | BX
+   ;
+
+cbz_cbnz
+   : CBNZ
+   | CBZ
+;
+
+cmp_cmn
+    : CMP
+    | CMN
+;
+
+cps : CPSID
+    | CPSIE ;
+
+ldm_stm
+    : LDM
+    | LDMDB
+    | LDMEA
+    | LDMFD
+    | LDMIA
+    ;
+
+ldr_str
+    : LDR
+    | LDRB
+    | LDRSB
+    | LDRH
+    | LDRSH
+    | STR
+    | STRB
+    | LDRD
+    | STRD
+    | STRH
+    | LDRBT
+    | LDRHT
+    | LDRSBT
+    | LDRSHT
+    | LDRT
+;
 
 directives
    : AREA
@@ -824,3 +862,21 @@ GET : '.get';
 PROC : '.proc';
 ENDP : '.endp';
 END : '.end';
+//флаги
+EQ : 'EQ';
+NE : 'NE';
+CS : 'CS';
+CC : 'CC';
+L0 : 'L0';
+MI : 'MI';
+PL : 'PL';
+VS : 'VS';
+VC : 'VC';
+HI : 'HI';
+LS : 'LS';
+GE : 'GE';
+LT : 'LT';
+GT : 'GT';
+LE : 'LE';
+AL : 'AL';
+HS : 'HS';
