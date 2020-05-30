@@ -17,7 +17,9 @@ proc
 statement
    : addsubstracts | logicalands | b_instr_label | b_instr_rm | adrs | arythmetics | rrxs | bfc | bfi | bkpt | cbz_cbnzs
    | clz | clrex | cmp_cmn | cmp_cmns | cpss | dmb | dsb | isb | it | ldm_stms | ldrs | ldrex | strex | ldrexb | strexb
-   | ldrexh | strexh | mul | mla_mls | movs_mvn | movt
+   | ldrexh | strexh | mul | mla_mls | movs_mvn | movt | mrs | msr | pkhbt | pkhtb | push_pops | qadd_qsubs | qasx_qsaxs
+   | qdadd_qdsubs | revs | sadds | sasx_ssax | sbfx_ubfx | sdiv_udiv | sel | sev | shadd | shasx_shsax | shsub | smlas
+   | smlad | umulls | smlsds | smmlas
    ;
 
 //TODO доделать команды
@@ -98,7 +100,41 @@ pkhtb : PKHTB cond_code (register Separator)? register Separator register (Separ
 
 push_pops : push_pop cond_code '{' register (Separator register '-' register)? (Separator register)? '}' ;
 
-qadd_qsubs : qadd_qsub cond_code (register Separator)? register Separator register ;
+qadd_qsubs : qadd cond_code (register Separator)? register Separator register ;
+
+qasx_qsaxs: qasx_qsax cond_code (register Separator)? register Separator register ;
+
+qdadd_qdsubs : qdadd_qdsub cond_code (register Separator)? register Separator register ;
+
+revs: rev cond_code register Separator register ;
+
+sadds : sadd cond_code (register Separator)? register Separator register ;
+
+sasx_ssax : (SASX | SSAX) cond_code (register Separator)? register Separator register ;
+
+sbfx_ubfx : (SBFX | UBFX) cond_code register Separator register Separator constant Separator constant ;
+
+sdiv_udiv : (SDIV | UDIV) cond_code (register Separator)? register Separator register ;
+
+sel : SEL cond_code (register Separator)? register Separator register ;
+
+sev: SEV cond_code ;
+
+shadd : (SHADD8 | SHADD16 ) cond_code (register Separator)? register Separator register ;
+
+shasx_shsax : (SHASX | SHSAX) cond_code (register Separator)? register Separator register ;
+
+shsub : (SHSUB8 | SHSUB16) cond_code (register Separator)? register Separator register ;
+
+smlas : smla cond_code register Separator register Separator register (Separator register)? ;
+
+smlad : (SMLAD | SMLADX) cond_code register Separator register Separator register Separator register ;
+
+umulls : umull cond_code register Separator register Separator register Separator register ;
+
+smlsds : smlsd cond_code register Separator register Separator register Separator register ;
+
+smmlas : smmla cond_code register Separator register Separator register Separator register ;
 
 // ДОП ШТУКИ
 constant : '#' (Digit | Char | Hexnum);
@@ -151,16 +187,6 @@ register
    | MRS
    | MSR
    | NOP
-   | QASX
-   | QDADD
-   | QDSUB
-   | QSAX
-   | RBIT
-   | REV
-   | REV16
-   | REVSH
-   | SADD16
-   | SADD8
    | SASX
    | SBFX
    | SDIV
@@ -172,25 +198,8 @@ register
    | SHSAX
    | SHSUB16
    | SHSUB8
-   | SMLABB
-   | SMLABT
-   | SMLATB
-   | SMLATT
    | SMLAD
    | SMLADX
-   | SMLAL
-   | SMLALBB
-   | SMLALBT
-   | SMLALTB
-   | SMLALTT
-   | SMLALD
-   | SMLALDX
-   | SMLAWB
-   | SMLAWT
-   | SMLSD
-   | SMLSLD
-   | SMMLA
-   | SMMLS
    | SMMLR
    | SMMUL
    | SMMULR
@@ -199,7 +208,6 @@ register
    | SMULBT
    | SMULTB
    | SMULTT
-   | SMULL
    | SMULWB
    | SMULWT
    | SMUSD
@@ -243,8 +251,6 @@ register
    | UBFX
    | UDIV
    | UMAAL
-   | UMLAL
-   | UMULL
    | UQADD16
    | UQADD8
    | UQASX
@@ -412,13 +418,62 @@ push_pop
     : PUSH
     | POP ;
 
-qadd_qsub
+qadd
     : QADD
     | QADD16
-    | QADD8
+    | QADD8 ;
+
+qasx_qsax
+    : QASX
+    | QSAX ;
+
+qdadd_qdsub
+    : QDADD
+    | QDSUB
     | QSUB
     | QSUB16
-    | QSUB8 ;
+    | QSUB8;
+
+rev : RBIT
+    | REV
+    | REV16
+    | REVSH ;
+
+sadd
+    : SADD16
+    | SADD8 ;
+
+smla
+    : SMLABB
+    | SMLABT
+    | SMLATB
+    | SMLATT
+    | SMLAWB
+    | SMLAWT ;
+
+umull
+    : UMLAL
+    | UMULL
+    | SMULL
+    | SMLAL
+    | SMLALD
+    | SMLALDX
+    | SMLALBB
+    | SMLALBT
+    | SMLALTB
+    | SMLALTT ;
+
+smlsd
+    : SMLSD
+    | SMLSLD
+    | SMLSDX
+    | SMLSLDX ;
+
+smmla
+    : SMMLA
+    | SMMLS
+    | SMMLAR
+    | SMMLSR ;
 
 directives
    : AREA
@@ -870,6 +925,10 @@ VSTRF3264 : 'VSTR.F<32|64>';
 VSUBF3264 : 'VSUB.F<32|64>';
 WFE : 'WFE';
 WFI : 'WFI';
+SMLSDX : 'SMLSDX';
+SMLSLDX : 'SMLSLDX';
+SMMLAR : 'SMMLAR';
+SMMLSR : 'SMMLSR';
 
 //directives
 AREA : 'AREA';
