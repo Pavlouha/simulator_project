@@ -1,5 +1,5 @@
 grammar arm;
-
+//TODO сделать парсинг
 compilationUnit
    : (segments )* END Identifier
    ;
@@ -12,57 +12,59 @@ proc
    : Identifier PROC (statement)* 'ret' Identifier ENDP
    ;
 
-   //TODO не делол первые три вещи, надо сначала с командами разбираться
+   //TODO список команд
 
 statement
    : addsubstracts | logicalands | b_instr_label | b_instr_rm | adrs | arythmetics | rrxs | bfc | bfi | bkpt | cbz_cbnzs
    | clz | clrex | cmp_cmn | cmp_cmns | cpss | dmb | dsb | isb | it | ldm_stms | ldrs | ldrex | strex | ldrexb | strexb
-   | ldrexh | strexh | mul | mla_mls
+   | ldrexh | strexh | mul | mla_mls | movs_mvn | movt
    ;
 
-addsubstracts : addsubstract (register Separator)? register Separator (register | constant);
+//TODO доделать команды
+//КОМАНДЫ
+addsubstracts : addsubstract cond_code (register Separator)? register Separator second_operand ;
 
-logicalands : logicaland (register Separator)? register Separator (register | constant);
+logicalands : logicaland (register Separator)? register Separator second_operand ;
 
-adrs : adr register Separator Identifier;
+adrs : ADR cond_code register Separator Identifier;
 
 arythmetics : arythmetic cond_code register Separator register Separator (register | constant);
 
-rrxs : rrx register Separator register;
+rrxs : rrx cond_code register Separator register;
 
-b_instr_label : b_instr Identifier;
+b_instr_label : b_instr cond_code Identifier;
 
-b_instr_rm : b_instr register;
+b_instr_rm : b_instr cond_code register;
 
-bfc : BFC register Separator constant Separator constant ;
+bfc : BFC cond_code register Separator constant Separator constant ;
 
-bfi : BFI register Separator register Separator constant Separator constant ;
+bfi : BFI cond_code register Separator register Separator constant Separator constant ;
 
 bkpt : BKPT constant ;
 
 cbz_cbnzs : cbz_cbnz register Separator Identifier ;
 
-clrex: CLREX ;
+clrex: CLREX cond_code ;
 
-clz: CLZ register Separator register ;
+clz: CLZ cond_code register Separator register ;
 
-cmp_cmns: cmp_cmn register Separator (register | constant) ;
+cmp_cmns: cmp_cmn cond_code register Separator second_operand ;
 
 cpss : cps ('i' | 'f') ;
 
-dmb : DMB ;
+dmb : DMB cond_code ;
 
-dsb : DSB ;
+dsb : DSB cond_code ;
 
 isb : ISB ;
 
-it : IT ('E' | 'T' | 'EE' | 'ET' | 'TT' | 'TE' | 'EEE' | 'EET' | 'ETT' | 'TTT' | 'TTE' | 'TEE' | 'ETE' | 'TET')?;
+it : IT ('E' | 'T' | 'EE' | 'ET' | 'TT' | 'TE' | 'EEE' | 'EET' | 'ETT' | 'TTT' | 'TTE' | 'TEE' | 'ETE' | 'TET')? ;
 
-ldm_stms : ldm_stm register ('!')? Separator '{' register (',' register)? '}' ;
+ldm_stms : ldm_stm cond_code register ('!')? Separator '{' register (Separator register)? '}' ;
 
-ldrs : ldr_str ((register Separator offset ) | (register Separator offset_all '!') | (register Separator '[' register ']' ',' constant )
+ldrs : ldr_str cond_code ((register Separator offset ) | (register Separator offset_all '!') | (register Separator '[' register ']' Separator constant )
 | (register Separator register Separator offset ) | (register Separator register Separator offset_all '!')
-| (register Separator register Separator '[' register ']' ',' constant ));
+| (register Separator register Separator '[' register ']' Separator constant ));
 
 ldrex: LDREX cond_code register Separator offset;
 
@@ -80,7 +82,28 @@ mul : multiply cond_code (register Separator)? register Separator register ;
 
 mla_mls : mla cond_code register Separator register Separator register Separator register ;
 
+movs_mvn : mov_mvn cond_code register Separator second_operand | MOV cond_code register Separator constant ;
+
+movt : MOVT cond_code register Separator constant ;
+
+mrs : MRS cond_code register Separator (APSR | IPSR | EPSR | IEPSR | IAPSR | EAPSR | PSR | MSP | PSP | PRIMASK | BASEPRI
+| BASEPRI_MAX| FAULTMASK | CONTROL) ;
+
+msr : MSR cond_code (APSRR_nzcvq | APSR_g | APSR_nzcvqg | MSP | PSP | PRIMASK | BASEPRI| BASEPRI_MAX| FAULTMASK
+| CONTROL) Separator register ;
+
+pkhbt : PKHBT cond_code (register Separator)? register Separator register (Separator LSL constant)? ;
+
+pkhtb : PKHTB cond_code (register Separator)? register Separator register (Separator ASR constant)? ;
+
+push_pops : push_pop cond_code '{' register (Separator register '-' register)? (Separator register)? '}' ;
+
+qadd_qsubs : qadd_qsub cond_code (register Separator)? register Separator register ;
+
+// ДОП ШТУКИ
 constant : '#' (Digit | Char | Hexnum);
+
+second_operand : constant | register (Separator optional_shift constant)? | register Separator RRX ;
 
 offset : '[' register (',' constant)? ']' ;
 
@@ -117,9 +140,7 @@ register
    non_grouped
    : BFC
    | BFI
-   | POP
    | BKPT
-   | MOVS
    | CLREX
    | CLZ
    | DMB
@@ -129,21 +150,11 @@ register
    | MOVW
    | MRS
    | MSR
-   | MVN
-   | MVNS
    | NOP
-   | PKHTB
-   | PKHBT
-   | QADD
-   | QADD16
-   | QADD8
    | QASX
    | QDADD
    | QDSUB
    | QSAX
-   | QSUB
-   | QSUB16
-   | QSUB8
    | RBIT
    | REV
    | REV16
@@ -289,9 +300,9 @@ register
    | WFE
    | WFI
    | IT
-   | MOV
-   | PUSH
    ;
+
+optional_shift : ASR | LSL | LSR | ROR ;
 
 addsubstract
    : ADC
@@ -320,10 +331,6 @@ logicaland
     | ORN
     | ORNS
     ;
-
-adr
-   : ADR
-   ;
 
 arythmetic
    : ASR
@@ -394,6 +401,24 @@ multiply
 mla
     : MLA
     | MLS ;
+
+mov_mvn
+    : MOVS
+    | MOV
+    | MVN
+    | MVNS;
+
+push_pop
+    : PUSH
+    | POP ;
+
+qadd_qsub
+    : QADD
+    | QADD16
+    | QADD8
+    | QSUB
+    | QSUB16
+    | QSUB8 ;
 
 directives
    : AREA
@@ -562,8 +587,7 @@ String: '"' (~'"' | '\\"')* '"';
 Char : '\'' (~'\'' | '\\\'') '\'' ;
 
 fragment Letter
-   : ('a' .. 'z' | 'A' .. 'Z')
-   ;
+   : ('a' .. 'z' | 'A' .. 'Z') ;
 
 Digit: [0-9]+ ;
 
@@ -676,7 +700,7 @@ ORRS : 'ORRS';
 PKHTB : 'PKHTB';
 PKHBT : 'PKHBT';
 POP: 'POP';
-PUSH: 'push';
+PUSH: 'PUSH';
 QADD : 'QADD';
 QADD16 : 'QADD16';
 QADD8 : 'QADD8';
@@ -882,3 +906,16 @@ GT : 'GT';
 LE : 'LE';
 AL : 'AL';
 HS : 'HS';
+
+APSR : 'APSR';
+IPSR : 'IPSR';
+EPSR : 'EPSR';
+IEPSR : 'IEPSR';
+IAPSR : 'IAPSR';
+EAPSR : 'EAPSR';
+MSP : 'MSP';
+PSP : 'PSP';
+BASEPRI_MAX : 'BASEPRI_MAX';
+APSRR_nzcvq : 'APSRR_nzcvq';
+APSR_g : 'APSR_g';
+APSR_nzcvqg : 'APSR_nzcvqg';
