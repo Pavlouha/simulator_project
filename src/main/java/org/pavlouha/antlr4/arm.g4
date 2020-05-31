@@ -20,7 +20,7 @@ statement
    | qdadd_qdsubs | revs | sadds | sasx_ssax | sbfx_ubfx | sdiv_udiv | sel | sev | shadd | shasx_shsax | shsub | smlas
    | smlad | umulls | smlsds | smmlas | smull | smulwb | smusd | ssat_usat | ssat_usat16 | ssub8_16 | svc | sxta_uxtas
    | sxt_uxts | tbb | tbh | tst_teq | uadd8_16 | uhasx_uhsax | uhsub8_16 | uqadd_uqsubs | uqasx_uqsax | usad8 | usada8
-   | uasx_usax | usub8_16 | vabs
+   | uasx_usax | usub8_16 | vabs | vadd | vcmp_vcmpe
    ;
 
 //TODO доделать команды
