@@ -9,8 +9,7 @@ segments
    ;
 
 proc
-   : Identifier PROC (statement)* 'ret' Identifier ENDP
-   ;
+   : Identifier PROC (statement)* 'ret' Identifier ENDP ;
 
    //TODO список команд
 
@@ -19,7 +18,9 @@ statement
    | clz | clrex | cmp_cmn | cmp_cmns | cpss | dmb | dsb | isb | it | ldm_stms | ldrs | ldrex | strex | ldrexb | strexb
    | ldrexh | strexh | mul | mla_mls | movs_mvn | movt | mrs | msr | pkhbt | pkhtb | push_pops | qadd_qsubs | qasx_qsaxs
    | qdadd_qdsubs | revs | sadds | sasx_ssax | sbfx_ubfx | sdiv_udiv | sel | sev | shadd | shasx_shsax | shsub | smlas
-   | smlad | umulls | smlsds | smmlas
+   | smlad | umulls | smlsds | smmlas | smull | smulwb | smusd | ssat_usat | ssat_usat16 | ssub8_16 | svc | sxta_uxtas
+   | sxt_uxts | tbb | tbh | tst_teq | uadd8_16 | uhasx_uhsax | uhsub8_16 | uqadd_uqsubs | uqasx_uqsax | usad8 | usada8
+   | uasx_usax | usub8_16 | vabs
    ;
 
 //TODO доделать команды
@@ -58,7 +59,7 @@ dmb : DMB cond_code ;
 
 dsb : DSB cond_code ;
 
-isb : ISB ;
+isb : ISB Hexnum;
 
 it : IT ('E' | 'T' | 'EE' | 'ET' | 'TT' | 'TE' | 'EEE' | 'EET' | 'ETT' | 'TTT' | 'TTE' | 'TEE' | 'ETE' | 'TET')? ;
 
@@ -136,8 +137,58 @@ smlsds : smlsd cond_code register Separator register Separator register Separato
 
 smmlas : smmla cond_code register Separator register Separator register Separator register ;
 
+smull : (SMULL | SMULLR ) cond_code register Separator register (Separator register)? ;
+
+smulwb : (SMULWB | SMULWT) cond_code (register Separator)? register Separator register ;
+
+smusd : (SMUSD | SMUSDX ) cond_code (register Separator)? register Separator register ;
+
+ssat_usat : ssat cond_code register Separator constant Separator register (Separator (ASR | LSL) constant)? ;
+
+ssat_usat16 : (SSAT16 | USAT16) cond_code register Separator constant Separator register ;
+
+ssub8_16 : (SSUB8 | SSUB16 ) cond_code (register Separator)? register Separator register ;
+
+svc : cond_code constant ;
+
+sxta_uxtas : sxta_uxta cond_code (register Separator)? register Separator register (Separator ROR constant)? ;
+
+sxt_uxts : sxt_uxt cond_code (register Separator)? register (Separator ROR constant)? ;
+
+tbb : TBB '[' register Separator register ']' ;
+
+tbh : TBH '[' register Separator register Separator LSL constant ;
+
+tst_teq : (TST | TEQ ) cond_code register Separator second_operand;
+
+uadd8_16 : (UADD8 | UADD16) cond_code (register Separator)? register Separator register ;
+
+uhasx_uhsax : (UHASX | UHSAX) cond_code (register Separator)? register Separator register ;
+
+uhsub8_16 : (UHSUB16 | UHSUB8) cond_code (register Separator)? register Separator register ;
+
+uqadd_uqsubs : uqadd_uqsub cond_code (register Separator)? register Separator register ;
+
+uqasx_uqsax : (UQASX | UQSAX) cond_code (register Separator)? register Separator register ;
+
+usad8 : USAD8 cond_code (register Separator)? register Separator register ;
+
+usada8 : USADA8 cond_code (register Separator)? register Separator register Separator register ;
+
+uasx_usax : (UASX | USAX ) cond_code (register Separator)? register Separator register ;
+
+usub8_16 : (USUB16 | USUB8) cond_code (register Separator)? register Separator register ;
+
+vabs : VABS cond_code '.F32' s_register Separator s_register ;
+
+vadd : VADD cond_code '.F32' (s_register Separator)? s_register Separator s_register ;
+
+vcmp_vcmpe : (VCMP | VCMPE ) cond_code '.F32' s_register Separator (s_register | '#' FloatingPointLiteral ) ;
+
+
+
 // ДОП ШТУКИ
-constant : '#' (Digit | Char | Hexnum);
+constant : '#' (Decimalnum | Char | Hexnum);
 
 second_operand : constant | register (Separator optional_shift constant)? | register Separator RRX ;
 
@@ -173,6 +224,25 @@ register
    | CONTROL
    ;
 
+s_register
+   : S0
+   | S1
+   | S2
+   | S3
+   | S4
+   | S5
+   | S6
+   | S7
+   | S8
+   | S9
+   | S10
+   | S11
+   | S12
+   | S13
+   | S14
+   | S15
+   ;
+
    non_grouped
    : BFC
    | BFI
@@ -200,7 +270,6 @@ register
    | SHSUB8
    | SMLAD
    | SMLADX
-   | SMMLR
    | SMMUL
    | SMMULR
    | SMUAD
@@ -212,29 +281,14 @@ register
    | SMULWT
    | SMUSD
    | SMUSDX
-   | SSAT
    | SSAT16
    | SSAX
    | SSUB16
    | SSUB8
-   | STM
-   | STMDB
-   | STMEA
-   | STMFD
-   | STMIA
-   | STRBT
    | STREX
    | STREXB
    | STREXH
-   | STRHT
-   | STRT
    | SVC
-   | SXTAB
-   | SXTAB16
-   | SXTAH
-   | SXTB16
-   | SXTB
-   | SXTH
    | TBB
    | TBH
    | TEQ
@@ -251,29 +305,15 @@ register
    | UBFX
    | UDIV
    | UMAAL
-   | UQADD16
-   | UQADD8
    | UQASX
    | UQSAX
-   | UQSUB16
-   | UQSUB8
    | USAD8
    | USADA8
-   | USAT
    | USAT16
    | UASX
    | USUB16
    | USUB8
-   | UXTAB
-   | UXTAB16
-   | UXTAH
-   | UXTB
-   | UXTB16
-   | UXTH
-   | VABSF32
-   | VADDF32
-   | VCMPF32
-   | VCMPEF32
+   | VABS
    | VCVTS32F32
    | VCVTS16F32
    | VCVTRS32F32
@@ -380,6 +420,11 @@ ldm_stm
     | LDMEA
     | LDMFD
     | LDMIA
+    | STM
+    | STMDB
+    | STMEA
+    | STMFD
+    | STMIA
     ;
 
 ldr_str
@@ -398,6 +443,9 @@ ldr_str
     | LDRSBT
     | LDRSHT
     | LDRT
+    | STRHT
+    | STRT
+    | STRBT
 ;
 
 multiply
@@ -473,7 +521,34 @@ smmla
     : SMMLA
     | SMMLS
     | SMMLAR
-    | SMMLSR ;
+    | SMMLSR
+    | SMMLR ;
+
+ssat
+    : SSAT
+    | USAT ;
+
+sxta_uxta
+    : SXTAB
+    | SXTAB16
+    | SXTAH
+    | UXTAB
+    | UXTAB16
+    | UXTAH ;
+
+sxt_uxt
+    : SXTB16
+    | SXTB
+    | SXTH
+    | UXTB
+    | UXTB16
+    | UXTH ;
+
+uqadd_uqsub
+    : UQADD16
+    | UQADD8
+    | UQSUB16
+    | UQSUB8 ;
 
 directives
    : AREA
@@ -491,150 +566,25 @@ directives
    | GET
    | PROC
    | ENDP
-   | END
-;
-
-ty
-   : BYTE
-   | SBYTE
-   | DB
-   | WORD
-   | SWORD
-   | DW
-   | DWORD
-   | SDWORD
-   | DD
-   | FWORD
-   | DF
-   | QWORD
-   | DQ
-   | TBYTE
-   | DT
-   | REAL4
-   | REAL8
-   | REAL
-   ;
-
-question: QUESTION;
+   | END ;
 
 Identifier : [a-z][a-zA-Z0-9_]* ;
 
-BYTE
-   : 'byte'
-   ;
+QUESTION : '?' ;
 
+Hexnum : '0x' HexDigit + ;
 
-SBYTE
-   : 'sbyte'
-   ;
+Decimalnum : Digit + ;
 
+Octalnum : ('0' .. '7') + ('o' | 'O') ;
 
-DB
-   : 'db'
-   ;
-
-
-WORD
-   : 'word'
-   ;
-
-
-SWORD
-   : 'sword'
-   ;
-
-
-DW
-   : 'dw'
-   ;
-
-
-DWORD
-   : 'dword'
-   ;
-
-
-SDWORD
-   : 'sdword'
-   ;
-
-
-DD
-   : 'dd'
-   ;
-
-
-FWORD
-   : 'fword'
-   ;
-
-
-DF
-   : 'df'
-   ;
-
-
-QWORD
-   : 'qword'
-   ;
-
-
-DQ
-   : 'dq'
-   ;
-
-
-TBYTE
-   : 'tbyte'
-   ;
-
-
-DT
-   : 'dt'
-   ;
-
-
-REAL4
-   : 'real4'
-   ;
-
-
-REAL8
-   : 'real8'
-   ;
-
-
-REAL
-   : 'real'
-   ;
-
-QUESTION
-   : '?'
-   ;
-
-Hexnum
-   : HexDigit + ('h' | 'H')
-   ;
-
-
-Octalnum
-   : ('0' .. '7') + ('o' | 'O')
-   ;
-
-
-fragment HexDigit
-   : ('0' .. '9' | 'a' .. 'f' | 'A' .. 'F')
-   ;
-
-
+fragment HexDigit : ('0' .. '9' | 'a' .. 'f' | 'A' .. 'F') ;
+//хз, что там внизу, TODO понять
 FloatingPointLiteral
    : ('0' .. '9') + '.' ('0' .. '9')* Exponent? | '.' ('0' .. '9') + Exponent? | ('0' .. '9') + Exponent
    ;
 
-
-fragment Exponent
-   : ('e' | 'E') ('+' | '-')? ('0' .. '9') +
-   ;
+fragment Exponent : ('e' | 'E') ('+' | '-')? ('0' .. '9') + ;
 
 
 String: '"' (~'"' | '\\"')* '"';
@@ -644,7 +594,7 @@ Char : '\'' (~'\'' | '\\\'') '\'' ;
 fragment Letter
    : ('a' .. 'z' | 'A' .. 'Z') ;
 
-Digit: [0-9]+ ;
+Digit: [0-9] ;
 
 Colon: ':';
 
@@ -890,10 +840,10 @@ UXTAH : 'UXTAH';
 UXTB : 'UXTB';
 UXTB16 : 'UXTB16';
 UXTH : 'UXTH';
-VABSF32 : 'VABS.F32';
-VADDF32 : 'VADD.F32';
-VCMPF32 : 'VCMP.F32';
-VCMPEF32 : 'VCMPE.F32';
+VABS : 'VABS';
+VADD : 'VADD';
+VCMP : 'VCMP';
+VCMPE : 'VCMPE';
 VCVTS32F32 : 'VCVT.S32.F32';
 VCVTS16F32 : 'VCVT.S16.F32';
 VCVTRS32F32 : 'VCVTR.S32.F32';
@@ -929,6 +879,7 @@ SMLSDX : 'SMLSDX';
 SMLSLDX : 'SMLSLDX';
 SMMLAR : 'SMMLAR';
 SMMLSR : 'SMMLSR';
+SMULLR : 'SMULLR';
 
 //directives
 AREA : 'AREA';
@@ -978,3 +929,21 @@ BASEPRI_MAX : 'BASEPRI_MAX';
 APSRR_nzcvq : 'APSRR_nzcvq';
 APSR_g : 'APSR_g';
 APSR_nzcvqg : 'APSR_nzcvqg';
+
+//S
+S0 : 'S0';
+S1 : 'S1';
+S2 : 'S2';
+S3 : 'S3';
+S4 : 'S4';
+S5 : 'S5';
+S6 : 'S6';
+S7 : 'S7';
+S8 : 'S8';
+S9 : 'S9';
+S10 : 'S10';
+S11 : 'S11';
+S12 : 'S12';
+S13 : 'S13';
+S14 : 'S14';
+S15 : 'S15';
