@@ -20,7 +20,9 @@ statement
    | qdadd_qdsubs | revs | sadds | sasx_ssax | sbfx_ubfx | sdiv_udiv | sel | sev | shadd | shasx_shsax | shsub | smlas
    | smlad | umulls | smlsds | smmlas | smull | smulwb | smusd | ssat_usat | ssat_usat16 | ssub8_16 | svc | sxta_uxtas
    | sxt_uxts | tbb | tbh | tst_teq | uadd8_16 | uhasx_uhsax | uhsub8_16 | uqadd_uqsubs | uqasx_uqsax | usad8 | usada8
-   | uasx_usax | usub8_16 | vabs | vadd | vcmp_vcmpe
+   | uasx_usax | usub8_16 | vabs | vadd | vcmp_vcmpe | vcvt_vcvtr32 | vcvt16 | vcvtb_vcvtts | vdiv | vfma_vfms | vfnma_vfnms
+   | vldm | vldr | vlma_vlms | vmov_immediate | vmov_register | vmov_scalar | vmov_arm_core | vmov_two_arm | vmov_arm_scalar
+   | vmrs | vmsr | vmul | vneg | vnmla_vnmls
    ;
 
 //TODO доделать команды
@@ -63,7 +65,7 @@ isb : ISB Hexnum;
 
 it : IT ('E' | 'T' | 'EE' | 'ET' | 'TT' | 'TE' | 'EEE' | 'EET' | 'ETT' | 'TTT' | 'TTE' | 'TEE' | 'ETE' | 'TET')? ;
 
-ldm_stms : ldm_stm cond_code register ('!')? Separator '{' register (Separator register)? '}' ;
+ldm_stms : ldm_stm cond_code register ('!')? Separator '{' (register | register '-' register) (Separator register | Separator register '-' register )* '}' ;
 
 ldrs : ldr_str cond_code ((register Separator offset ) | (register Separator offset_all '!') | (register Separator '[' register ']' Separator constant )
 | (register Separator register Separator offset ) | (register Separator register Separator offset_all '!')
@@ -92,7 +94,7 @@ movt : MOVT cond_code register Separator constant ;
 mrs : MRS cond_code register Separator (APSR | IPSR | EPSR | IEPSR | IAPSR | EAPSR | PSR | MSP | PSP | PRIMASK | BASEPRI
 | BASEPRI_MAX| FAULTMASK | CONTROL) ;
 
-msr : MSR cond_code (APSRR_nzcvq | APSR_g | APSR_nzcvqg | MSP | PSP | PRIMASK | BASEPRI| BASEPRI_MAX| FAULTMASK
+msr : MSR cond_code (APSRR_nzcvq | APSR_g | APSR_nzcv | MSP | PSP | PRIMASK | BASEPRI| BASEPRI_MAX| FAULTMASK
 | CONTROL) Separator register ;
 
 pkhbt : PKHBT cond_code (register Separator)? register Separator register (Separator LSL constant)? ;
@@ -185,6 +187,50 @@ vadd : VADD cond_code '.F32' (s_register Separator)? s_register Separator s_regi
 
 vcmp_vcmpe : (VCMP | VCMPE ) cond_code '.F32' s_register Separator (s_register | '#' FloatingPointLiteral ) ;
 
+vcvt_vcvtr32 : vcvt_vcvtr cond_code ('.S32.F32' | '.U32.F32') s_register Separator s_register ;
+
+vcvt16 : VCVT cond_code ('.S16.F32' | '.S32.F32' | '.U16.F32' | '.U32.F32') s_register Separator s_register Separator
+ constant ;
+
+vcvtb_vcvtts : vcvtt cond_code ('.F32.F16' | '.F16.F32') s_register Separator s_register ;
+
+vdiv : VDIV cond_code '.F32' (s_register Separator)? s_register Separator s_register ;
+
+vfma_vfms : (VFMA | VFMS) cond_code '.F32' (s_register Separator)? s_register Separator s_register ;
+
+vfnma_vfnms : (VFNMA | VFNMS ) cond_code '.F32' (s_register Separator)? s_register Separator s_register ;
+
+vldm : VLDM ('IA' | 'DB')? cond_code ('.F32' | '.F64')? register ('!')? '{' (Separator s_register | Separator
+s_register '-' s_register ) '}' ;
+
+vldr : VLDR cond_code ('.64' (register Separator offset | register Separator Identifier | register '[' PC Separator constant ']') | '.32'
+(s_register Separator offset | s_register Separator Identifier | s_register '[' PC Separator constant ']') ) ;
+
+vlma_vlms : (VLMA | VLMS) cond_code '.F32' s_register Separator s_register Separator s_register ;
+
+vmov_immediate : VMOV cond_code '.F32' s_register Separator constant ;
+
+vmov_register : VMOV cond_code ('.F32' s_register Separator s_register | '.F64' register Separator register) ;
+
+vmov_scalar : VMOV cond_code register Separator s_register'['( '1' | '0' ) ']' ;
+
+vmov_arm_core : VMOV cond_code (s_register Separator register| register Separator s_register) ;
+
+vmov_two_arm : VMOV cond_code (s_register Separator s_register Separator register Separator register | register Separator
+register Separator s_register Separator s_register) ;
+
+vmov_arm_scalar : VMOV cond_code ('.32')? s_register '[' ('1'|'0') ']' Separator register ;
+
+vmrs : VMRS cond_code (register Separator FPSCR | APSR_nzcv Separator FPSCR) ; //хз
+
+vmsr : VMSR cond_code FPSCR Separator register ;
+
+vmul : VMUL cond_code '.F32' (s_register Separator)? s_register Separator s_register  ;
+
+vneg : VNEG cond_code '.F32' s_register Separator s_register ;
+
+vnmla_vnmls : (VNMLA | VNMLS) cond_code '.F32' s_register Separator s_register Separator s_register ;
+
 
 
 // ДОП ШТУКИ
@@ -241,111 +287,6 @@ s_register
    | S13
    | S14
    | S15
-   ;
-
-   non_grouped
-   : BFC
-   | BFI
-   | BKPT
-   | CLREX
-   | CLZ
-   | DMB
-   | DSB
-   | ISB
-   | MOVT
-   | MOVW
-   | MRS
-   | MSR
-   | NOP
-   | SASX
-   | SBFX
-   | SDIV
-   | SEL
-   | SEV
-   | SHADD16
-   | SHADD8
-   | SHASX
-   | SHSAX
-   | SHSUB16
-   | SHSUB8
-   | SMLAD
-   | SMLADX
-   | SMMUL
-   | SMMULR
-   | SMUAD
-   | SMULBB
-   | SMULBT
-   | SMULTB
-   | SMULTT
-   | SMULWB
-   | SMULWT
-   | SMUSD
-   | SMUSDX
-   | SSAT16
-   | SSAX
-   | SSUB16
-   | SSUB8
-   | STREX
-   | STREXB
-   | STREXH
-   | SVC
-   | TBB
-   | TBH
-   | TEQ
-   | TST
-   | UADD16
-   | UADD8
-   | USAX
-   | UHADD16
-   | UHADD8
-   | UHASX
-   | UHSAX
-   | UHSUB16
-   | UHSUB8
-   | UBFX
-   | UDIV
-   | UMAAL
-   | UQASX
-   | UQSAX
-   | USAD8
-   | USADA8
-   | USAT16
-   | UASX
-   | USUB16
-   | USUB8
-   | VABS
-   | VCVTS32F32
-   | VCVTS16F32
-   | VCVTRS32F32
-   | VCVTBHF32F16
-   | VCVTTBTF32F16
-   | VDIVF32
-   | VFMAF32
-   | VFNMAF32
-   | VFMSF32
-   | VFNMSF32
-   | VLDMF3264
-   | VLDRF3264
-   | VLMAF32
-   | VLMSF32
-   | VMOVF32
-   | VMOV
-   | VMRS
-   | VMSR
-   | VMULF32
-   | VNEGF32
-   | VNMLAF32
-   | VNMLSF32
-   | VNMUL
-   | VPOP
-   | VPUSH
-   | VSQRTF32
-   | VSTM
-   | VSTRF3264
-   | VSUBF3264
-   | WFE
-   | WFI
-   | IT
    ;
 
 optional_shift : ASR | LSL | LSR | ROR ;
@@ -550,6 +491,17 @@ uqadd_uqsub
     | UQSUB16
     | UQSUB8 ;
 
+vcvt_vcvtr
+    : VCVT
+    | VCVTR ;
+
+vcvtt
+    : VCVTB
+    | VCVTT
+    | VCVTH
+    | VCVTTB
+    | VCVTTT ;
+
 directives
    : AREA
    | ENTRY
@@ -581,11 +533,9 @@ Octalnum : ('0' .. '7') + ('o' | 'O') ;
 fragment HexDigit : ('0' .. '9' | 'a' .. 'f' | 'A' .. 'F') ;
 //хз, что там внизу, TODO понять
 FloatingPointLiteral
-   : ('0' .. '9') + '.' ('0' .. '9')* Exponent? | '.' ('0' .. '9') + Exponent? | ('0' .. '9') + Exponent
-   ;
+   : ('0' .. '9') + '.' ('0' .. '9')* Exponent? | '.' ('0' .. '9') + Exponent? | ('0' .. '9') + Exponent ;
 
 fragment Exponent : ('e' | 'E') ('+' | '-')? ('0' .. '9') + ;
-
 
 String: '"' (~'"' | '\\"')* '"';
 
@@ -844,28 +794,26 @@ VABS : 'VABS';
 VADD : 'VADD';
 VCMP : 'VCMP';
 VCMPE : 'VCMPE';
-VCVTS32F32 : 'VCVT.S32.F32';
-VCVTS16F32 : 'VCVT.S16.F32';
-VCVTRS32F32 : 'VCVTR.S32.F32';
-VCVTBHF32F16 : 'VCVT<B|H>.F32.F16';
-VCVTTBTF32F16 : 'VCVTT<B|T>.F32.F16';
-VDIVF32 : 'VDIV.F32';
-VFMAF32 : 'VFMA.F32';
-VFNMAF32 : 'VFNMA.F32';
-VFMSF32 : 'VFMS.F32';
-VFNMSF32 : 'VFNMS.F32';
-VLDMF3264 : 'VLDM.F<32|64>';
-VLDRF3264 : 'VLDR.F<32|64>';
-VLMAF32 : 'VLMA.F32';
-VLMSF32 : 'VLMS.F32';
-VMOVF32 : 'VMOV.F32';
+VCVT : 'VCVT';
+VCVTR : 'VCVTR';
+VCVTB : 'VCVTB';
+VCVTT : 'VCVTT';
+VDIV : 'VDIV';
+VFMA : 'VFMA';
+VFNMA : 'VFNMA';
+VFMS : 'VFMS';
+VFNMS : 'VFNMS';
+VLDM : 'VLDM';
+VLDR : 'VLDR';
+VLMA : 'VLMA';
+VLMS : 'VLMS';
 VMOV : 'VMOV';
 VMRS : 'VMRS';
 VMSR : 'VMSR';
-VMULF32 : 'VMUL.F32';
-VNEGF32 : 'VNEG.F32';
-VNMLAF32 : 'VNMLA.F32';
-VNMLSF32 : 'VNMLS.F32';
+VMUL : 'VMUL';
+VNEG : 'VNEG';
+VNMLA : 'VNMLA';
+VNMLS : 'VNMLS';
 VNMUL : 'VNMUL';
 VPOP : 'VPOP';
 VPUSH : 'VPUSH';
@@ -880,6 +828,9 @@ SMLSLDX : 'SMLSLDX';
 SMMLAR : 'SMMLAR';
 SMMLSR : 'SMMLSR';
 SMULLR : 'SMULLR';
+VCVTH : 'VCVTH';
+VCVTTB : 'VCVTTB';
+VCVTTT : 'VCVTTT';
 
 //directives
 AREA : 'AREA';
@@ -947,3 +898,6 @@ S12 : 'S12';
 S13 : 'S13';
 S14 : 'S14';
 S15 : 'S15';
+
+APSR_nzcv : 'APSR_nzcv';
+FPSCR : 'FPSCR';
