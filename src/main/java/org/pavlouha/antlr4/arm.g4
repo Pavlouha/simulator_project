@@ -1,15 +1,12 @@
 grammar arm;
 //TODO сделать парсинг
-compilationUnit
-   : (segments )* END Identifier
-   ;
+compilationUnit : (section )* 'END' ;
 
-segments
-   : Identifier 'segments' 'para' 'public' (statement | proc)* Identifier 'ends'
-   ;
+section
+   : AREA Identifier (statement | function)* ;
 
-proc
-   : Identifier PROC (statement)* 'ret' Identifier ENDP ;
+function
+   : Identifier (FUNCTION 'ENDFUNC' (statement)* | PROC (statement)* 'ENDP') ;
 
 statement
    : addsubstracts | logicalands | b_instr_label | b_instr_rm | adrs | arythmetics | rrxs | bfc | bfi | bkpt | cbz_cbnzs
@@ -255,7 +252,24 @@ offset : '[' register (Separator constant)? ']' ;
 
 offset_all : '[' register Separator constant ']' ;
 
-lbl : Identifier Colon ;
+area_args : align | assoc | CODE | CODEALIGN | COMDEF | comgroup | COMMON | DATA | FINI_ARRAY | group | INIT_ARRAY |
+ linkorder | merge | NOALLOC | NOINIT | PREINIT_ARRAY | READONLY | READWRITE | secflags | sectype | STRINGS ;
+
+sectype: SECTYPE '=' Decimalnum;
+
+secflags: SECFLAGS '=' Decimalnum;
+
+merge: MERGE '=' Decimalnum;
+
+linkorder: LINKORDER '=' Identifier;
+
+group: GROUP '=' Identifier;
+
+comgroup: COMGROUP '=' Identifier;
+
+assoc: ASSOC '=' Identifier;
+
+align: ALIGN '=' Decimalnum;
 
 cond_code : (EQ | NE | CS | HS | CC | L0 | MI | PL | VS | VC | HI | LS | GE | LT | GT | LE | AL)? ;
 
@@ -519,19 +533,12 @@ directives
    : AREA
    | ENTRY
    | ALIGN
-   | DCB
-   | DCW
-   | DCD
-   | SPACE
-   | EQU
-   | RN
    | EXPORT
    | IMPORT
    | INCLUDE
+   | FUNCTION
    | GET
-   | PROC
-   | ENDP
-   | END ;
+   | PROC;
 
 Identifier : [a-z][a-zA-Z0-9_]* ;
 
@@ -849,19 +856,15 @@ VCVTTT : 'VCVTTT';
 AREA : 'AREA';
 ENTRY : 'ENTRY';
 ALIGN : '.align';
-DCB : '.dcb';
-DCW : '.dcw';
-DCD : '.dcd';
-SPACE : '.space';
-EQU : '.equ';
-RN : '.rn';
-EXPORT : '.export';
-IMPORT : '.import';
-INCLUDE : '.include';
-GET : '.get';
-PROC : '.proc';
-ENDP : '.endp';
-END : '.end';
+THUMB : 'THUMB';
+PRESERVE : 'PRESERVE';
+EXPORT : 'EXPORT';
+IMPORT : 'IMPORT';
+INCLUDE : 'INCLUDE';
+PROC : 'PROC';
+FUNCTION : 'FUNCTION';
+GET : 'GET';
+
 //флаги
 EQ : 'EQ';
 NE : 'NE';
