@@ -11,8 +11,6 @@ segments
 proc
    : Identifier PROC (statement)* 'ret' Identifier ENDP ;
 
-   //TODO список команд
-
 statement
    : addsubstracts | logicalands | b_instr_label | b_instr_rm | adrs | arythmetics | rrxs | bfc | bfi | bkpt | cbz_cbnzs
    | clz | clrex | cmp_cmn | cmp_cmns | cpss | dmb | dsb | isb | it | ldm_stms | ldrs | ldrex | strex | ldrexb | strexb
@@ -22,10 +20,9 @@ statement
    | sxt_uxts | tbb | tbh | tst_teq | uadd8_16 | uhasx_uhsax | uhsub8_16 | uqadd_uqsubs | uqasx_uqsax | usad8 | usada8
    | uasx_usax | usub8_16 | vabs | vadd | vcmp_vcmpe | vcvt_vcvtr32 | vcvt16 | vcvtb_vcvtts | vdiv | vfma_vfms | vfnma_vfnms
    | vldm | vldr | vlma_vlms | vmov_immediate | vmov_register | vmov_scalar | vmov_arm_core | vmov_two_arm | vmov_arm_scalar
-   | vmrs | vmsr | vmul | vneg | vnmla_vnmls
+   | vmrs | vmsr | vmul | vneg | vnmla_vnmls | vnmul | vpop | vpush | vsqrt | vstm | vstr | vsub | wfe | wfi
    ;
 
-//TODO доделать команды
 //КОМАНДЫ
 addsubstracts : addsubstract cond_code (register Separator)? register Separator second_operand ;
 
@@ -201,7 +198,7 @@ vfma_vfms : (VFMA | VFMS) cond_code '.F32' (s_register Separator)? s_register Se
 vfnma_vfnms : (VFNMA | VFNMS ) cond_code '.F32' (s_register Separator)? s_register Separator s_register ;
 
 vldm : VLDM ('IA' | 'DB')? cond_code ('.F32' | '.F64')? register ('!')? '{' (Separator s_register | Separator
-s_register '-' s_register ) '}' ;
+s_register '-' s_register )* '}' ;
 
 vldr : VLDR cond_code ('.64' (register Separator offset | register Separator Identifier | register '[' PC Separator constant ']') | '.32'
 (s_register Separator offset | s_register Separator Identifier | s_register '[' PC Separator constant ']') ) ;
@@ -231,16 +228,32 @@ vneg : VNEG cond_code '.F32' s_register Separator s_register ;
 
 vnmla_vnmls : (VNMLA | VNMLS) cond_code '.F32' s_register Separator s_register Separator s_register ;
 
+vnmul : VNMUL cond_code '.F32' (s_register Separator)? s_register Separator s_register ;
 
+vpop : VPOP cond_code ('.F32'|'.F64') '{' ((Separator)? s_register | (Separator)? s_register '-' s_register )* '}' ;
+
+vpush : VPUSH cond_code ('.F32'|'.F64') '{' ((Separator)? s_register | (Separator)? s_register '-' s_register )* '}' ;
+
+vsqrt : VSQRT cond_code '.F32' s_register Separator s_register ;
+
+vstm : VSTM ('IA' | 'DB') cond_code ('.F32'|'.F64') register ('!')? Separator '{' ((Separator)? s_register | (Separator)? s_register '-' s_register )* '}' ;
+
+vstr : VSTR cond_code (('.F32')? s_register offset | ('.F64')? Letter Letter Separator offset ); //каво
+
+vsub : VSUB cond_code '.F32' (s_register Separator)? s_register Separator s_register ;
+
+wfe : WFE cond_code ;
+
+wfi : WFI cond_code ;
 
 // ДОП ШТУКИ
 constant : '#' (Decimalnum | Char | Hexnum);
 
 second_operand : constant | register (Separator optional_shift constant)? | register Separator RRX ;
 
-offset : '[' register (',' constant)? ']' ;
+offset : '[' register (Separator constant)? ']' ;
 
-offset_all : '[' register ',' constant ']' ;
+offset_all : '[' register Separator constant ']' ;
 
 lbl : Identifier Colon ;
 
@@ -541,7 +554,7 @@ String: '"' (~'"' | '\\"')* '"';
 
 Char : '\'' (~'\'' | '\\\'') '\'' ;
 
-fragment Letter
+Letter
    : ('a' .. 'z' | 'A' .. 'Z') ;
 
 Digit: [0-9] ;
@@ -817,10 +830,10 @@ VNMLS : 'VNMLS';
 VNMUL : 'VNMUL';
 VPOP : 'VPOP';
 VPUSH : 'VPUSH';
-VSQRTF32 : 'VSQRT.F32';
+VSQRT : 'VSQRT';
 VSTM : 'VSTM';
-VSTRF3264 : 'VSTR.F<32|64>';
-VSUBF3264 : 'VSUB.F<32|64>';
+VSTR: 'VSTR';
+VSUB : 'VSUB';
 WFE : 'WFE';
 WFI : 'WFI';
 SMLSDX : 'SMLSDX';
