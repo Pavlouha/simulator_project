@@ -4,10 +4,10 @@ grammar arm;
 compilationUnit : (section )* '.end' ;
 
 section
-   : Section Identifier (Separator area_args)* (statement | function)* ;
+   : Section Identifier Separator (section_flags)? (statement | function)* ;
 
 function
-   : Identifier (FUNCTION 'ENDFUNC' (statement)* | PROC (statement)* 'ENDP') ;
+   : TYPE Identifier id (statement)* ;
 
 statement
    : addsubstracts | logicalands | b_instr_label | b_instr_rm | adrs | arythmetics | rrxs | bfc | bfi | bkpt | cbz_cbnzs
@@ -255,24 +255,24 @@ offset_all : '[' register Separator constant ']' ;
 
 id : Identifier Colon ;
 
-area_args : align | assoc | CODE | CODEALIGN | COMDEF | comgroup | COMMON | DATA | FINI_ARRAY | group | INIT_ARRAY |
- linkorder | merge | NOALLOC | NOINIT | PREINIT_ARRAY | READONLY | READWRITE | secflags | sectype | STRINGS ;
+section_flags : '"a"' | '"e"' | WRITABLE | EXECUTABLE | '"M"' | '"S"' | '"G"' | '"T"' | '"?"'  ;
 
-sectype: SECTYPE '=' Decimalnum;
 
-secflags: SECFLAGS '=' Decimalnum;
+sectype: SECTYPE Decimalnum;
 
-merge: MERGE '=' Decimalnum;
+secflags: SECFLAGS Decimalnum;
 
-linkorder: LINKORDER '=' Identifier;
+merge: MERGE Decimalnum;
 
-group: GROUP '=' Identifier;
+linkorder: LINKORDER Identifier;
 
-comgroup: COMGROUP '=' Identifier;
+group: GROUP Identifier;
 
-assoc: ASSOC '=' Identifier;
+comgroup: COMGROUP Identifier;
 
-align: ALIGN '=' Decimalnum;
+assoc: ASSOC Identifier;
+
+align: ALIGN Decimalnum;
 
 cond_code : (EQ | NE | CS | HS | CC | L0 | MI | PL | VS | VC | HI | LS | GE | LT | GT | LE | AL)? ;
 
@@ -540,7 +540,6 @@ directives
    | EXPORT
    | IMPORT
    | INCLUDE
-   | FUNCTION
    | TEXT
    | GET
    | WORD
@@ -548,9 +547,7 @@ directives
 
 preserve: PRESERVE;
 
-Identifier : Letter ( Letter | Digit | '_' )* ;
-
-QUESTION : '?' ;
+Identifier : [a-zA-Z][a-zA-Z0-9_]* ;
 
 Hexnum : '0x' HexDigit + ;
 
@@ -870,7 +867,7 @@ EXPORT : 'EXPORT';
 IMPORT : 'IMPORT';
 INCLUDE : '.include';
 PROC : 'PROC';
-FUNCTION : 'FUNCTION';
+TYPE : '.type';
 GET : 'GET';
 
 //флаги
@@ -935,8 +932,8 @@ INIT_ARRAY : 'INIT_ARRAY';
 NOALLOC : 'NOALLOC';
 NOINIT : 'NOINIT';
 PREINIT_ARRAY : 'PREINIT_ARRAY';
-READONLY : 'READONLY';
-READWRITE : 'READWRITE';
+EXECUTABLE : '"x"';
+WRITABLE : '"w"';
 STRINGS : 'STRINGS';
 SECTYPE : 'SECTYPE';
 SECFLAGS : 'SECFLAGS';
