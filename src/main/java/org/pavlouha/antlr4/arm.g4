@@ -1,7 +1,7 @@
 grammar arm;
 //TODO сделать парсинг
 // TODO некоторые штуки могут быть не рабочими
-compilationUnit : (section )* '.end' ;
+compilationUnit : (section )* END ;
 
 section
    : Section Identifier Separator (section_flags)? (statement | function)* ;
@@ -272,7 +272,7 @@ comgroup: COMGROUP Identifier;
 
 assoc: ASSOC Identifier;
 
-align: ALIGN Decimalnum;
+align: BALIGN Decimalnum;
 
 cond_code : (EQ | NE | CS | HS | CC | L0 | MI | PL | VS | VC | HI | LS | GE | LT | GT | LE | AL)? ;
 
@@ -533,19 +533,12 @@ vcvtt
     | VCVTTT ;
 
 directives
-   : ENTRY
-   | ALIGN
+   : BALIGN
    | GLOBAL
-   | preserve
-   | EXPORT
-   | IMPORT
    | INCLUDE
    | TEXT
-   | GET
-   | WORD
-   | PROC;
+   | WORD;
 
-preserve: PRESERVE;
 
 Identifier : [a-zA-Z][a-zA-Z0-9_]* ;
 
@@ -593,7 +586,7 @@ R11 : 'R11';
 R12 : 'R12';
 SP : 'SP';
 LR : 'LR';
-PC : 'PC';
+PC : '.';
 
 PSR : 'PSR';
 PRIMASK : 'PRIMASK';
@@ -859,16 +852,18 @@ VCVTTT 	:	(	 'vcvttt'	|	 'VCVTTT'	)	;
 
 //directives
 Section : '.section';
-ENTRY : 'ENTRY';
-ALIGN : '.align';
+BALIGN : '.balign';
 THUMB : '.thumb';
-PRESERVE : 'PRESERVE';
-EXPORT : 'EXPORT';
-IMPORT : 'IMPORT';
+ARM : '.arm';
+CODE32 : '.code32' ;
+CODE16 : '.code16' ;
 INCLUDE : '.include';
-PROC : 'PROC';
 TYPE : '.type';
-GET : 'GET';
+GLOBAL : '.global';
+EQU : '.equ';
+INCBIN : '.incbin' ;
+PRINT : '.print';
+
 
 //флаги
 EQ : 'EQ';
@@ -942,6 +937,28 @@ LINKORDER : 'LINKORDER';
 GROUP : 'GROUP';
 COMGROUP : 'COMGROUP';
 ASSOC : 'ASSOC';
-GLOBAL : '.global';
-WORD : '.word';
 TEXT : '.text';
+//operators
+OR : '|';
+AND_logical : 'AND';
+NOT : '~' ;
+SHL : '<<' ;
+SHR : '>>';
+//conditional directives
+cond_directives : IF | IFDEF | IFNOTDEF | ELSE | ELSEIF | ENDIF ;
+IF : '.if';
+IFDEF : '.ifdef';
+IFNOTDEF: '.ifnotdef';
+ELSE : '.else';
+ELSEIF : '.elseif' ;
+ENDIF : '.endif';
+END : '.end';
+// data directives
+BYTE : '.byte';
+HALFWORD : '.hword';
+WORD : '.word';
+QUAD : '.quad';
+SPACE : '.space';
+//symbol definition
+SET : '.set';
+FOO : 'foo';
