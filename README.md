@@ -4,4 +4,4 @@ Antlr-based (Java) ARM Cortex-M4 instruction set simulator project with GNU synt
 
 WORK IN PROGRESS
 
-I am ashamed for this bad code, sorry =(
+I am ashamed of this bad code, sorry =(
