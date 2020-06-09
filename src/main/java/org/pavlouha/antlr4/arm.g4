@@ -1,10 +1,24 @@
 grammar arm;
-//TODO сделать парсинг
-// TODO некоторые штуки могут быть не рабочими
-compilationUnit : (section )* END ;
+
+//некоторые штуки могут быть не рабочими
+compilationUnit : params (section )* END ;
+
+params : (syntax | thumb | cpu)* ;
+
+syntax: SYNTAX Identifier;
+
+thumb : THUMB ;
+
+cpu : CPU Identifier ;
 
 section
-   : Section Identifier Separator (section_flags)? (statement | function)* ;
+   : Section (TEXT) (Separator section_flags)? (section_params| statement | function | id)* ;
+
+section_params : stack | reset ;
+
+reset: WORD 'Reset' ('+'| '-') '1';
+
+stack: WORD Hexnum;
 
 function
    : TYPE Identifier id (statement)* ;
@@ -236,7 +250,7 @@ vsqrt : VSQRT cond_code '.F32' s_register Separator s_register ;
 
 vstm : VSTM ('IA' | 'DB') cond_code ('.F32'|'.F64') register ('!')? Separator '{' ((Separator)? s_register | (Separator)? s_register '-' s_register )* '}' ;
 
-vstr : VSTR cond_code (('.F32')? s_register offset | ('.F64')? Letter Letter Separator offset ); //каво
+vstr : VSTR cond_code (('.F32')? s_register offset | ('.F64')? s_register Separator offset ); //каво
 
 vsub : VSUB cond_code '.F32' (s_register Separator)? s_register Separator s_register ;
 
@@ -253,10 +267,9 @@ offset : '[' register (Separator constant)? ']' ;
 
 offset_all : '[' register Separator constant ']' ;
 
-id : Identifier Colon ;
+id : Identifier Colon statement;
 
 section_flags : '"a"' | '"e"' | WRITABLE | EXECUTABLE | '"M"' | '"S"' | '"G"' | '"T"' | '"?"'  ;
-
 
 sectype: SECTYPE Decimalnum;
 
@@ -366,7 +379,7 @@ rrx
    ;
 
 b_instr
-   : B
+   : Bi
    | BL
    | BLX
    | BX
@@ -537,10 +550,11 @@ directives
    | GLOBAL
    | INCLUDE
    | TEXT
+   | SYNTAX
    | WORD;
 
 
-Identifier : [a-zA-Z][a-zA-Z0-9_]* ;
+Identifier : [a-z][a-zA-Z0-9_-]* ;
 
 Hexnum : '0x' HexDigit + ;
 
@@ -557,9 +571,6 @@ String: '"' (~'"' | '\\"')* '"';
 
 Char : '\'' (~'\'' | '\\\'') '\'' ;
 
-Letter
-   : ('a' .. 'z' | 'A' .. 'Z') ;
-
 fragment Digit :'0'..'9' ;
 
 Colon: ':';
@@ -568,7 +579,7 @@ Separator: ',';
 
 WS : [\t\r\n\f ]+ -> skip ;
 
-LINE_COMMENT :   ( '//' ~[\r\n]* '\r'? '\n'	| '/*' .*? '*/'	) -> skip ;
+LINE_COMMENT :   ( '@' ~[\r\n]* '\r'? '\n'	| '/*' .*? '*/'	) -> skip ;
 
 //registers
 R0 : 'R0';
@@ -605,7 +616,7 @@ AND 	:	(	 'and'	|	 'AND'	)	;
 ANDS 	:	(	 'ands'	|	 'ANDS'	)	;
 ASR 	:	(	 'asr'	|	 'ASR'	)	;
 ASRS 	:	(	 'asrs'	|	 'ASRS'	)	;
-B 	:	(	 'b'	|	 'B'	)	;
+Bi 	:	'B'	;
 BFC 	:	(	 'bfc'	|	 'BFC'	)	;
 BFI 	:	(	 'bfi'	|	 'BFI'	)	;
 BIC 	:	(	 'bic'	|	 'BIC'	)	;
@@ -962,3 +973,33 @@ SPACE : '.space';
 //symbol definition
 SET : '.set';
 FOO : 'foo';
+SYNTAX : '.syntax';
+
+/* буквовки
+fragment A:('a'|'A');
+fragment B:('b'|'B');
+fragment C:('c'|'C');
+fragment D:('d'|'D');
+fragment E:('e'|'E');
+fragment F:('f'|'F');
+fragment G:('g'|'G');
+fragment H:('h'|'H');
+fragment I:('i'|'I');
+fragment J:('j'|'J');
+fragment K:('k'|'K');
+fragment L:('l'|'L');
+fragment M:('m'|'M');
+fragment N:('n'|'N');
+fragment O:('o'|'O');
+fragment P:('p'|'P');
+fragment Q:('q'|'Q');
+fragment R:('r'|'R');
+fragment S:('s'|'S');
+fragment T:('t'|'T');
+fragment U:('u'|'U');
+fragment V:('v'|'V');
+fragment W:('w'|'W');
+fragment X:('x'|'X');
+fragment Y:('y'|'Y');
+fragment Z:('z'|'Z'); */
+CPU : '.cpu';

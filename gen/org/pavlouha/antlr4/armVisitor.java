@@ -17,11 +17,53 @@ public interface armVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitCompilationUnit(armParser.CompilationUnitContext ctx);
 	/**
+	 * Visit a parse tree produced by {@link armParser#params}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitParams(armParser.ParamsContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link armParser#syntax}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSyntax(armParser.SyntaxContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link armParser#thumb}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitThumb(armParser.ThumbContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link armParser#cpu}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitCpu(armParser.CpuContext ctx);
+	/**
 	 * Visit a parse tree produced by {@link armParser#section}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
 	T visitSection(armParser.SectionContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link armParser#section_params}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitSection_params(armParser.Section_paramsContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link armParser#reset}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitReset(armParser.ResetContext ctx);
+	/**
+	 * Visit a parse tree produced by {@link armParser#stack}.
+	 * @param ctx the parse tree
+	 * @return the visitor result
+	 */
+	T visitStack(armParser.StackContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link armParser#function}.
 	 * @param ctx the parse tree

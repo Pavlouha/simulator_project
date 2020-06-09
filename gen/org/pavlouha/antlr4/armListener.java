@@ -18,6 +18,46 @@ public interface armListener extends ParseTreeListener {
 	 */
 	void exitCompilationUnit(armParser.CompilationUnitContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link armParser#params}.
+	 * @param ctx the parse tree
+	 */
+	void enterParams(armParser.ParamsContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link armParser#params}.
+	 * @param ctx the parse tree
+	 */
+	void exitParams(armParser.ParamsContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link armParser#syntax}.
+	 * @param ctx the parse tree
+	 */
+	void enterSyntax(armParser.SyntaxContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link armParser#syntax}.
+	 * @param ctx the parse tree
+	 */
+	void exitSyntax(armParser.SyntaxContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link armParser#thumb}.
+	 * @param ctx the parse tree
+	 */
+	void enterThumb(armParser.ThumbContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link armParser#thumb}.
+	 * @param ctx the parse tree
+	 */
+	void exitThumb(armParser.ThumbContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link armParser#cpu}.
+	 * @param ctx the parse tree
+	 */
+	void enterCpu(armParser.CpuContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link armParser#cpu}.
+	 * @param ctx the parse tree
+	 */
+	void exitCpu(armParser.CpuContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link armParser#section}.
 	 * @param ctx the parse tree
 	 */
@@ -27,6 +67,36 @@ public interface armListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitSection(armParser.SectionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link armParser#section_params}.
+	 * @param ctx the parse tree
+	 */
+	void enterSection_params(armParser.Section_paramsContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link armParser#section_params}.
+	 * @param ctx the parse tree
+	 */
+	void exitSection_params(armParser.Section_paramsContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link armParser#reset}.
+	 * @param ctx the parse tree
+	 */
+	void enterReset(armParser.ResetContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link armParser#reset}.
+	 * @param ctx the parse tree
+	 */
+	void exitReset(armParser.ResetContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link armParser#stack}.
+	 * @param ctx the parse tree
+	 */
+	void enterStack(armParser.StackContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link armParser#stack}.
+	 * @param ctx the parse tree
+	 */
+	void exitStack(armParser.StackContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link armParser#function}.
 	 * @param ctx the parse tree
