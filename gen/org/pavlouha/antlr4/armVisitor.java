@@ -53,11 +53,11 @@ public interface armVisitor<T> extends ParseTreeVisitor<T> {
 	 */
 	T visitSection_params(armParser.Section_paramsContext ctx);
 	/**
-	 * Visit a parse tree produced by {@link armParser#reset}.
+	 * Visit a parse tree produced by {@link armParser#reset_command}.
 	 * @param ctx the parse tree
 	 * @return the visitor result
 	 */
-	T visitReset(armParser.ResetContext ctx);
+	T visitReset_command(armParser.Reset_commandContext ctx);
 	/**
 	 * Visit a parse tree produced by {@link armParser#stack}.
 	 * @param ctx the parse tree

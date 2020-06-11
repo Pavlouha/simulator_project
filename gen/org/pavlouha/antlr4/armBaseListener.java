@@ -100,13 +100,13 @@ public class armBaseListener implements armListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterReset(armParser.ResetContext ctx) { }
+	@Override public void enterReset_command(armParser.Reset_commandContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitReset(armParser.ResetContext ctx) { }
+	@Override public void exitReset_command(armParser.Reset_commandContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

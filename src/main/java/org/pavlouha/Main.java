@@ -5,14 +5,23 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 
+import org.pavlouha.antlr4.armListener;
+import org.pavlouha.antlr4.armParser;
+import org.pavlouha.antlr4.armLexer;
+import org.pavlouha.antlr4.armWalker;
+
 public class Main {
     public static void main( String[] args) throws Exception
     {
-        HelloLexer lexer = new HelloLexer(CharStreams.fromString("hello mothafucka"));
+    armLexer lexer = new armLexer(CharStreams.fromFileName("main.asm"));
+    try {
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-        HelloParser parser = new HelloParser(tokens);
-        ParseTree tree = parser.r();
+        armParser parser = new armParser(tokens);
+        ParseTree tree = parser.compilationUnit();
         ParseTreeWalker walker = new ParseTreeWalker();
-        walker.walk(new HelloWalker(), tree);
+        walker.walk(new armWalker(), tree);
+    } catch (Exception e) {
+        e.printStackTrace();
+    }
     }
 }

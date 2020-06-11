@@ -78,15 +78,15 @@ public interface armListener extends ParseTreeListener {
 	 */
 	void exitSection_params(armParser.Section_paramsContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link armParser#reset}.
+	 * Enter a parse tree produced by {@link armParser#reset_command}.
 	 * @param ctx the parse tree
 	 */
-	void enterReset(armParser.ResetContext ctx);
+	void enterReset_command(armParser.Reset_commandContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link armParser#reset}.
+	 * Exit a parse tree produced by {@link armParser#reset_command}.
 	 * @param ctx the parse tree
 	 */
-	void exitReset(armParser.ResetContext ctx);
+	void exitReset_command(armParser.Reset_commandContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link armParser#stack}.
 	 * @param ctx the parse tree
